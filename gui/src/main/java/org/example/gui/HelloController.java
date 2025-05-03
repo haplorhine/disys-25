@@ -21,10 +21,12 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 public class HelloController {
     @FXML
     public TextField name;
+    public TextField systemPercentage;
+    public TextField gridPortion;
     @FXML
     private Label welcomeText;
 
@@ -130,4 +132,22 @@ public class HelloController {
         }
     }
 
+    public void onGetCurrentUsage(ActionEvent actionEvent) {
+
+        try {
+            String urlString = "http://localhost:8080/energy/current";
+            System.out.println(urlString);
+
+            var request = HttpRequest.newBuilder().uri(URI.create(urlString)).GET().build();
+            var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Response Status Code: " + response.statusCode());
+            ObjectMapper mapper = new ObjectMapper();
+            EnergyPercentage ep = mapper.readValue(response.body(), EnergyPercentage.class);
+            systemPercentage.setText(ep.getCurrentCommunityPool().toString());
+            gridPortion.setText(ep.getGridPorton().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
+        }
+    }
 }
