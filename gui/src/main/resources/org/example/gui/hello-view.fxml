@@ -8,6 +8,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -27,7 +28,7 @@
       <children>
          <HBox prefHeight="34.0" prefWidth="305.0">
             <children>
-               <Label text="Community Pool" />
+               <Label prefHeight="17.0" prefWidth="120.0" text="Community Pool" />
                <TextField fx:id="systemPercentage">
                   <HBox.margin>
                      <Insets left="20.0" />
@@ -36,7 +37,7 @@
          </HBox>
          <HBox prefHeight="32.0" prefWidth="305.0">
             <children>
-               <Label text="Grid Portion" />
+               <Label prefWidth="120.0" text="Grid Portion" />
                <TextField fx:id="gridPortion">
                   <HBox.margin>
                      <Insets left="20.0" />
@@ -46,6 +47,7 @@
       </children>
    </VBox>
    <Button mnemonicParsing="false" onAction="#onGetCurrentUsage" text="getCurrentUsage" />
+   <Separator prefWidth="200.0" />
 
     <HBox spacing="5">
       <children>
@@ -58,7 +60,7 @@
       <children>
          <HBox prefHeight="31.0" prefWidth="305.0">
             <children>
-               <Label text="CommunityUsed" />
+               <Label prefWidth="120.0" text="CommunityUsed" />
                <TextField fx:id="resultCommunityUsed" prefHeight="25.0" prefWidth="146.0">
                   <HBox.margin>
                      <Insets left="20.0" />
@@ -68,7 +70,7 @@
          </HBox>
          <HBox prefHeight="31.0" prefWidth="305.0">
             <children>
-               <Label text="CommunityProduced" />
+               <Label prefWidth="120.0" text="CommunityProduced" />
                <TextField fx:id="resultCommunityProduced" prefHeight="25.0" prefWidth="146.0">
                   <HBox.margin>
                      <Insets left="20.0" />
@@ -78,7 +80,7 @@
          </HBox>
          <HBox prefHeight="31.0" prefWidth="305.0">
             <children>
-               <Label text="GridUsed" />
+               <Label prefWidth="120.0" text="GridUsed" />
                <TextField fx:id="resultGridUsed" prefHeight="25.0" prefWidth="146.0">
                   <HBox.margin>
                      <Insets left="20.0" />
@@ -88,6 +90,7 @@
          </HBox>
       </children>
    </VBox>
+   <Separator prefWidth="200.0" />
    <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
      <tabs>
        <Tab text="Detaildaten">
