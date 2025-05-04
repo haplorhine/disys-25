@@ -39,6 +39,8 @@ public class HelloController {
     public LineChart<String, Number> diagrammTableData;
     public TableColumn<Map.Entry<String, Energy>, Double> communityProducedColumn;
     public TableColumn<Map.Entry<String, Energy>, Double> gridUsedColumn;
+    public TextField resultGridUsed;
+    public TextField resultCommunityProduced;
 
     XYChart.Series<String, Number> total = new XYChart.Series<>();
     XYChart.Series<String, Number> community = new XYChart.Series<>();
@@ -102,7 +104,8 @@ public class HelloController {
     @FXML
     private void onShowData(ActionEvent actionEvent) {
 
-        if (startTime.getValue().isEmpty() || endTime.getValue().isEmpty()) {
+        welcomeText.setText("");
+        if (startTime.getValue() == null || startTime.getValue().isEmpty() || endTime.getValue() == null|| endTime.getValue().isEmpty()) {
             welcomeText.setText("Start- und oder Endzeit nicht gesetzt");
             return;
         }
@@ -113,7 +116,9 @@ public class HelloController {
                     "&ende=" + URLEncoder.encode(endTime.getValue(), StandardCharsets.UTF_8));
             ObjectMapper mapper = new ObjectMapper();
             Energy energy = mapper.readValue(response, Energy.class);
+            resultCommunityProduced.setText(energy.getCommunityProduced().toString());
             resultCommunityUsed.setText(energy.getCommunityUsed().toString());
+            resultGridUsed.setText(energy.getGridUsed().toString());
 
         } catch (Exception e) {
             e.printStackTrace();
