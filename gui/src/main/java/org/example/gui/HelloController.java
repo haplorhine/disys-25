@@ -1,9 +1,13 @@
 package org.example.gui;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.chart.LineChart;
+import javafx.scene.control.*;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -19,7 +23,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 public class HelloController {
@@ -27,112 +34,17 @@ public class HelloController {
     public TextField name;
     public TextField systemPercentage;
     public TextField gridPortion;
+    public ComboBox<String> startTime;
+    public ComboBox<String> endTime;
+    public TextField resultCommunityUsed;
+    public TableColumn<Map.Entry<String, Energy>, Double> CommunityUsedColumn;
+    public TableColumn<Map.Entry<String, Energy>, String> timeColumn;
+    public TableView<Map.Entry<String, Energy>> detailTableData;
     @FXML
     private Label welcomeText;
 
-    @FXML
-    protected void onURLConnectionClicked() {
-        try {
-            String urlString = "http://localhost:8080/hello?name=" + URLEncoder.encode(name.getText(), StandardCharsets.UTF_8.toString());
-            System.out.println(urlString);
-
-            final URLConnection connection = new URL(urlString).openConnection();
-            try (
-                    final InputStreamReader isr = new InputStreamReader(connection.getInputStream());
-                    final BufferedReader br = new BufferedReader(isr)
-            ) {
-                welcomeText.setText(br.lines().collect(Collectors.joining()));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
-        }
-    }
-
-    public void onHttpClientClicked(ActionEvent actionEvent) {
-        try {
-            String urlString = "http://localhost:8080/hello?name=" + URLEncoder.encode(name.getText(), StandardCharsets.UTF_8.toString());
-            System.out.println(urlString);
-
-            var request = HttpRequest.newBuilder().uri(URI.create(urlString)).GET().build();
-            var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("Response Status Code: " + response.statusCode());
-            welcomeText.setText(response.body());
-        } catch (Exception e) {
-            e.printStackTrace();
-            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
-        }
-    }
-
-    public void onHttpClientPostClicked(ActionEvent actionEvent) {
-        try {
-            // parameters will be transferred within the request body
-            HashMap<String, String> params = new HashMap<>();
-            params.put("name", name.getText());
-            params.put("value", "dummy");
-            StringBuilder requestBody = new StringBuilder();
-            params.entrySet().forEach((v) -> requestBody.append(v + "\n"));
-
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/hello"))
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
-                    .build();
-            System.out.printf("%s\n%s\n", request, params);
-
-            var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("Response Status Code: " + response.statusCode());
-            welcomeText.setText(response.body());
-        } catch (Exception e) {
-            e.printStackTrace();
-            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
-        }
-    }
-
-
-    public void onWebClientClicked(ActionEvent actionEvent) {
-        try {
-            WebClient client = WebClient.builder()
-                    .baseUrl("http://localhost:8080/hello?name=" + URLEncoder.encode(name.getText(), StandardCharsets.UTF_8.toString()))
-                    .build();
-            System.out.println(client);
-            Mono<String> response = client
-                    .get()
-                    .retrieve()
-                    .bodyToMono(String.class);
-            welcomeText.setText(response.block());
-        } catch (Exception e) {
-            e.printStackTrace();
-            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
-        }
-    }
-
-
-    public void onWebClientPostClicked(ActionEvent actionEvent) {
-        // parameters will be transferred within the request body
-        HashMap<String, String> params = new HashMap<>();
-        params.put("name", name.getText());
-        params.put("value", "dummy");
-        StringBuilder requestBody = new StringBuilder();
-        params.entrySet().forEach((v) -> requestBody.append(v + "\n"));
-
-        try {
-            WebClient client = WebClient.builder()
-                    .baseUrl("http://localhost:8080/hello")
-                    .build();
-            System.out.println(client);
-            Mono<String> response = client
-                    .post()
-                    .body(BodyInserters.fromValue(requestBody.toString()))
-                    .retrieve()
-                    .bodyToMono(String.class);
-            welcomeText.setText(response.block());
-        } catch (Exception e) {
-            e.printStackTrace();
-            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
-        }
-    }
-
-    public void onGetCurrentUsage(ActionEvent actionEvent) {
+   @FXML
+    private void onGetCurrentUsage(ActionEvent actionEvent) {
 
         try {
             String urlString = "http://localhost:8080/energy/current";
@@ -145,6 +57,84 @@ public class HelloController {
             EnergyPercentage ep = mapper.readValue(response.body(), EnergyPercentage.class);
             systemPercentage.setText(ep.getCurrentCommunityPool().toString());
             gridPortion.setText(ep.getGridPorton().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
+        }
+    }
+
+    private List<String> getHours() {
+        List<String> timestamps = new ArrayList<>();
+        LocalDate startDate = LocalDate.now().minusDays(7);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        for (int day = 0; day < 7; day++) {
+            LocalDate date = startDate.plusDays(day);
+            for (int hour = 0; hour < 24; hour++) {
+                LocalDateTime dateTime = date.atTime(hour, 0);
+                timestamps.add(dateTime.format(formatter));
+            }
+        }
+
+        // Ausgabe zur Kontrolle
+        return timestamps;
+
+    }
+
+    @FXML
+    private void initialize() {
+        startTime.setItems(FXCollections.observableArrayList(getHours()));
+        endTime.setItems(FXCollections.observableArrayList(getHours()));
+
+         timeColumn.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
+                () -> cellData.getValue().getKey()));
+
+        // Spalte: Value (Sonnenschein in Minuten)
+        CommunityUsedColumn.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(
+                () -> cellData.getValue().getValue().getCommunityProduced()));
+
+
+
+    }
+
+    @FXML
+    private void onShowData(ActionEvent actionEvent) {
+        try {
+            String urlString = "http://localhost:8080/energy/history?start=" +
+                    URLEncoder.encode(startTime.getValue(), StandardCharsets.UTF_8) +
+                     "&ende=" + URLEncoder.encode(endTime.getValue(), StandardCharsets.UTF_8);
+            System.out.println(urlString);
+
+            var request = HttpRequest.newBuilder().uri(URI.create(urlString)).GET().build();
+            var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Response Status Code: " + response.statusCode());
+            ObjectMapper mapper = new ObjectMapper();
+            Energy energy = mapper.readValue(response.body(), Energy.class);
+            resultCommunityUsed.setText(energy.getCommunityUsed().toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
+        }
+    }
+
+    public void onGetDetailData(ActionEvent actionEvent) {
+        try {
+            String urlString = "http://localhost:8080/energy/detail?start=" +
+                    URLEncoder.encode(startTime.getValue(), StandardCharsets.UTF_8) +
+                    "&ende=" + URLEncoder.encode(endTime.getValue(), StandardCharsets.UTF_8);
+            System.out.println(urlString);
+
+            var request = HttpRequest.newBuilder().uri(URI.create(urlString)).GET().build();
+            var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Response Status Code: " + response.statusCode());
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Energy> detailData = mapper.readValue(response.body(), new TypeReference<LinkedHashMap<String, Energy>>() {
+            });
+
+            ObservableList<Map.Entry<String, Energy>> tableData =
+                    FXCollections.observableArrayList(detailData.entrySet());
+            detailTableData.setItems(tableData);
         } catch (Exception e) {
             e.printStackTrace();
             welcomeText.setText("ERROR: " + e.getLocalizedMessage());

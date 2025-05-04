@@ -1,4 +1,4 @@
-package com.example.entity;
+package org.example.gui;
 
 public class Energy {
     private Double communityProduced;
@@ -10,6 +10,7 @@ public class Energy {
         communityProduced= (double) 0;
         communityUsed= (double) 0;
         gridUsed= (double) 0;
+
     }
 
     public Energy(Double communityProduced, Double communityUsed, Double gridUsed) {
@@ -43,9 +44,6 @@ public class Energy {
     }
 
     public void add(Energy addElem) {
-        this.communityProduced +=addElem.getCommunityProduced();
-        this.gridUsed +=addElem.getGridUsed();
-        this.communityUsed += addElem.getCommunityUsed();
 
     }
 }
