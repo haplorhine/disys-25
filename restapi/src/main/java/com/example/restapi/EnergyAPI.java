@@ -21,12 +21,23 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * REstController für die Ermittlung der Daten für die Anzeige
+ */
 @RestController
 @RequestMapping("energy")
 public class EnergyAPI {
 
     private Map<String, Energy> data;
 
+    /**
+     * Initialisieren der Daten
+     * Derzeit noch alles im Speicher, wird danach von der Datenbank abgelöst
+     * Es wird eine LinkedHashMap mit den Zeiten erzeugt
+     * Key: Stunden
+     * Values: Energy - hält die erzeugten Werte
+     * Schon in Vorbereitung wird ober openWeatherData die Sonnenscheinzeit ermittelt um "realistische" daten zu haben
+     */
     public EnergyAPI() {
         data = new LinkedHashMap<>();
         Map<String, Integer> archiveData = new HashMap<>();
@@ -54,6 +65,16 @@ public class EnergyAPI {
 
     }
 
+    /**
+     * ermitteln der Daten für den Zeitausschnitt gewählt wurde
+     * derzeit wird noch über die HashMap gearbeitet - wird durch einen Datenbankzugriff abgelöst
+     * @param inputMap - Daten
+     * @param startKey - Startdatum
+     * @param endKey - Enddatum
+     * @return Map
+     * @param <K> Uhrzeit
+     * @param <V> Energy
+     */
     public static <K, V> Map<K, V> getSubMapByKeyRange(Map<K, V> inputMap, K startKey, K endKey) {
         Map<K, V> result = new LinkedHashMap<>();
 
@@ -75,6 +96,11 @@ public class EnergyAPI {
         return result;
     }
 
+    /**
+     * Ermitteln des aktuellen Erzeugungssstandes
+     *
+     * @return Energy-Percentage - Objekt mit den aktuellen Werten
+     */
     @GetMapping("current")
     public EnergyPercentage getCurrent() {
 
@@ -82,6 +108,14 @@ public class EnergyAPI {
 
     }
 
+    /**
+     * Ermitteln der historischen Daten lt start- und Endedatum.
+     * Die Parameter werden als Parameter in der GetUrl übergeben.
+     * Die Daten des Ausschnittes werden summiert.
+     * @param start - startdatum
+     * @param end - endatum
+     * @return Energy.class - Objekt mit den summierten WErten.
+     */
     @GetMapping("history")
     public Energy getHistory(@RequestParam(value = "start") String start, @RequestParam(value = "ende") String end) {
 
@@ -91,6 +125,14 @@ public class EnergyAPI {
 
     }
 
+    /**
+     * Ermitteln aller historischen Daten in einem Zeitabschnitt
+     * Der Abschnitt wird wieder als Parameter in der Url agegeben.
+     * Die Daten werden als HashMap <Zeit, Energy> zurück geliefert.
+     * @param start - beginn des gewünschten Ausschnitts
+     * @param end - Ende des gewünschten Ausschnitts
+     * @return HashMap mit den Einzeldaten
+     */
     @GetMapping("detail")
     public Map<String, Energy> getDetailHistory(@RequestParam(value = "start") String start, @RequestParam(value = "ende") String end) {
 
@@ -100,6 +142,16 @@ public class EnergyAPI {
 
     }
 
+    /**
+     * Ermitteln der historischen Wetterdaten über die APIi von open-meteo.com
+     * Es wird auch der gewünschte Zeitraum gelesen. Es ist nicht möglich den Einzelwert für die Stunde
+     * zu ermitteln. Die API liefert nur den Wert für einen ganzen Tag
+     * @param start - Beginn des Ausschnitts
+     * @param end - Ende des Ausschnitts
+     * @return - Map mit Uhrzeit und Sonnenscheindauer
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private Map<String, Integer> getArchiveWeatherData(LocalDate start, LocalDate end) throws IOException, InterruptedException {
 
         Map<String, Integer> result = new HashMap<>();

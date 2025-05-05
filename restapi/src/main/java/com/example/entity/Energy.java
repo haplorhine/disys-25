@@ -1,5 +1,9 @@
 package com.example.entity;
 
+/**
+ * Die Klasse hält die Werte für die erzeugte Energy der Community, wieviel die community wieder verbraucht hat und wieviel
+ * and das Netz abgebeben wurde.
+ */
 public class Energy {
     private Double communityProduced;
     private Double communityUsed;

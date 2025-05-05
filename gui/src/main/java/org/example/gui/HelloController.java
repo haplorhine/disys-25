@@ -25,6 +25,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller um die Daten anzuzeigen.
+ * Es werden je nach gewähltem Button die Daten mittels RestService ermittelt.
+ *
+ */
 public class HelloController {
     @FXML
     public TextField name;
@@ -48,6 +53,13 @@ public class HelloController {
     @FXML
     private Label welcomeText;
 
+    /**
+     * onGetCurrentUsage
+     * ermitteln der aktuellen Werte
+     * Es wird nur der WEbserver aufgerufen, die Daten danach angezeigt.
+     *
+     * @param actionEvent
+     */
     @FXML
     private void onGetCurrentUsage(ActionEvent actionEvent) {
 
@@ -63,6 +75,12 @@ public class HelloController {
         }
     }
 
+    /**
+     * Aufbereiten einer Liste von Strings mit den möglichen Zeiträumen
+     *
+     *
+     * @return Liste von Strings mit den möglichen Stunden
+     */
     private List<String> getHours() {
         List<String> timestamps = new ArrayList<>();
         LocalDate startDate = LocalDate.now().minusDays(7);
@@ -81,6 +99,13 @@ public class HelloController {
 
     }
 
+    /**
+     * initialize
+     * Initialisierungen beim Start durchführen.
+     * Die Auswahlfelder werden mit den möglichen Zeiträumen belegt.
+     * Die Tabellenspalten werden vorbereitet, damit die richtigen Daten angezeigt werden.
+     *
+     */
     @FXML
     private void initialize() {
         startTime.setItems(FXCollections.observableArrayList(getHours()));
@@ -101,6 +126,18 @@ public class HelloController {
 
     }
 
+    /**
+     * onShowData
+     * Anzeigen der Daten zusammengerechnet für den ausgewählten Zeitraum
+     *
+     * Die Start- und die Endzeit muss ausgewählt sein. Wenn nicht, wird ein Fehler ausgegeben
+     *
+     * Danach wird der WebServer aufgerufen um die Summe zu ermitteln.
+     * Das Ergebnis wird in den Feldern angezeigt.
+     *
+     *
+     * @param actionEvent
+     */
     @FXML
     private void onShowData(ActionEvent actionEvent) {
 
@@ -126,9 +163,22 @@ public class HelloController {
         }
     }
 
-    public void onGetDetailData(ActionEvent actionEvent) {
+    /**
+     * Ermitteln und aufbereiten der Detaildaten für die anzeige
+     * Zuerst wird überprüft, ob die Start- und Endzeit ausgewählt wurden.
+     * ist dem nicht der Fall, wird ein Fehler ausgegeben.
+     *
+     * Sind die Werte gesetzt, wird das Rest-Service für die Detaildaten aufgerufen.
+     *
+     * Danach werden die Tabelle und das Diagramm aufgebaut.
+     *
+     * @param actionEvent
+     */
+    @FXML
+    private void onGetDetailData(ActionEvent actionEvent) {
         welcomeText.setText("");
         if (startTime.getValue() == null || startTime.getValue().isEmpty() || endTime.getValue() == null|| endTime.getValue().isEmpty()) {
+
             welcomeText.setText("Start- und oder Endzeit nicht gesetzt");
             return;
         }
@@ -167,7 +217,17 @@ public class HelloController {
         }
     }
 
-    public String getResponse(String url) throws IOException, InterruptedException {
+    /**
+     * getResponse
+     * geordnet den Web-Server aufrufen.
+     *
+     *
+     * @param url - pfad des RestServices
+     * @return JSON-Objekt welches vom Server gelesen wurde
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    protected String getResponse(String url) throws IOException, InterruptedException {
         String urlString = "http://localhost:8080/" + url;
         System.out.println(urlString);
 

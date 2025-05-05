@@ -1,5 +1,8 @@
 package com.example.entity;
 
+/**
+ * Diese Klasse dient der Anzeige der aktuellen Daten
+ */
 public class EnergyPercentage {
     private Double currentCommunityPool;
     private Double gridPorton;
