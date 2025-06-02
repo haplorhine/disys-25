@@ -4,6 +4,7 @@ import com.example.entity.Energy;
 import com.example.entity.EnergyPercentage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class EnergyAPI {
 
     private Map<String, Energy> data;
+    private final RabbitTemplate rabbit;
 
     /**
      * Initialisieren der Daten
@@ -38,7 +40,8 @@ public class EnergyAPI {
      * Values: Energy - hält die erzeugten Werte
      * Schon in Vorbereitung wird ober openWeatherData die Sonnenscheinzeit ermittelt um "realistische" daten zu haben
      */
-    public EnergyAPI() {
+    public EnergyAPI(RabbitTemplate rabbit) {
+        this.rabbit = rabbit;
         data = new LinkedHashMap<>();
         Map<String, Integer> archiveData = new HashMap<>();
 
@@ -58,7 +61,7 @@ public class EnergyAPI {
                 LocalDateTime dateTime = date.atTime(hour, 0);
                 double percentage = archiveData.get(dateTime.format(formatter)) / 3600.;
 
-                Energy currentEnergy = new Energy(20. * percentage, 20. * percentage, 4.);
+                Energy currentEnergy = new Energy(20. * percentage, 10. * percentage, 5. * percentage, dateTime.format(formatter));
                 data.put(dateTime.format(formatter), currentEnergy);
             }
         }
@@ -188,5 +191,11 @@ public class EnergyAPI {
         }
 
         return result;
+    }
+
+    @GetMapping("/testmq")
+    public void sendProducer() {
+        System.out.println("Sending message...");
+        rabbit.convertAndSend("producer_in", "Hello World!");
     }
 }

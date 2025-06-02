@@ -5,21 +5,29 @@ package com.example.entity;
  * and das Netz abgebeben wurde.
  */
 public class Energy {
-    private Double communityProduced;
-    private Double communityUsed;
+    private Double communityProduced =0.;
+    private Double communityUsed =0.;
+    private Double gridUsed = 0.;
 
-    private Double gridUsed;
+    private String timeHour = "";
 
-    public Energy() {
-        communityProduced= (double) 0;
-        communityUsed= (double) 0;
-        gridUsed= (double) 0;
+    public String getTimeHour() {
+        return timeHour;
     }
 
-    public Energy(Double communityProduced, Double communityUsed, Double gridUsed) {
+    public void setTimeHour(String timeHour) {
+        this.timeHour = timeHour;
+    }
+
+    public Energy() {
+
+    }
+
+    public Energy(Double communityProduced, Double communityUsed, Double gridUsed, String timeHour) {
         this.communityProduced = communityProduced;
         this.communityUsed = communityUsed;
         this.gridUsed = gridUsed;
+        this.timeHour = timeHour;
     }
 
     public Double getCommunityProduced() {
