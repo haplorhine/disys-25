@@ -17,6 +17,7 @@ public class TimedMessenger {
         this.rabbit = rabbit;
     }
 
+    //sendet alle 5 Sekunden Daten an usage_in
     @Scheduled(fixedRate = 5000)
     public void sendProducer() {
         System.out.println("Sending message...");
