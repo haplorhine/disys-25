@@ -1,6 +1,6 @@
 package com.example.energyuser;
 
-import com.example.energyuser.data.User;
+import com.example.energyuser.data.Producer;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ public class TimedMessenger {
         LocalDateTime now = LocalDateTime.now();
         double baseKwh = getBaseKwhForTime(now.toLocalTime());
 
-        User msg = new User();
+        Producer msg = new Producer();
         msg.setType("USER");
         msg.setAssociation("COMMUNITY");
         msg.setKwh(baseKwh);

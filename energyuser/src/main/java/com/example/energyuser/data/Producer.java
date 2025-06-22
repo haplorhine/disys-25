@@ -2,17 +2,17 @@ package com.example.energyuser.data;
 
 import java.time.LocalDateTime;
 
-public class User {
+public class Producer {
 
     private String type;
     private String association;
     private double kwh;
     private LocalDateTime datetime;
 
-    public User() {
+    public Producer() {
     }
 
-    public User(String type, String association, double kwh, LocalDateTime datetime) {
+    public Producer(String type, String association, double kwh, LocalDateTime datetime) {
         this.type = type;
         this.association = association;
         this.kwh = kwh;
