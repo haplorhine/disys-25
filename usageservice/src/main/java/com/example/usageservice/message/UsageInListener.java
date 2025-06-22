@@ -5,6 +5,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import com.example.usageservice.data.Producer;
 
+/*
 @Service
 public class UsageInListener {
     private final RabbitTemplate rabbit;
@@ -21,4 +22,21 @@ public class UsageInListener {
 
     }
 
+}
+*/
+@Service
+public class UsageInListener {
+
+    private final UsageOutPublisher usageOutPublisher;
+
+    public UsageInListener(UsageOutPublisher usageOutPublisher) {
+        this.usageOutPublisher = usageOutPublisher;
+    }
+
+    @RabbitListener(queues = "usage_in")
+    public void receiveMessage(Producer messageProducer) {
+        System.out.println("Empfangen: " + messageProducer);
+
+        usageOutPublisher.sendDummyPercentageMessage();
+    }
 }
