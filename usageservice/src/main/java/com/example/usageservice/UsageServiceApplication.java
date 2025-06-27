@@ -14,8 +14,12 @@ import org.springframework.context.annotation.Bean;
 public class UsageServiceApplication {
 
 	@Bean
-	public Queue usage_in() {
-		return new Queue("usage_in", true);
+	public Queue producer_in() {
+		return new Queue("producer_in", true);
+	}
+	@Bean
+	public Queue consumer_in() {
+		return new Queue("consumer_in", true);
 	}
 
 	public static void main(String[] args) {
@@ -26,18 +30,5 @@ public class UsageServiceApplication {
 		return new Jackson2JsonMessageConverter();
 	}
 
-	@Bean
-	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-		RabbitTemplate template = new RabbitTemplate(connectionFactory);
-		template.setMessageConverter(jsonMessageConverter());
-		return template;
-	}
 
-	@Bean
-	public ConnectionFactory connectionFactory() {
-		CachingConnectionFactory factory = new CachingConnectionFactory("localhost");
-		factory.setUsername("guest");
-		factory.setPassword("guest");
-		return factory;
-	}
 }
