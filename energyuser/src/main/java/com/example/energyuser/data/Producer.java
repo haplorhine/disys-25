@@ -1,14 +1,23 @@
 package com.example.energyuser.data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class Producer {
 
     private String type;
-    private String assocation;
-    private Float energy;
+    private String association;
+    private double kwh;
+    private LocalDateTime datetime;
 
-    private Date time;
+    public Producer() {
+    }
+
+    public Producer(String type, String association, double kwh, LocalDateTime datetime) {
+        this.type = type;
+        this.association = association;
+        this.kwh = kwh;
+        this.datetime = datetime;
+    }
 
     public String getType() {
         return type;
@@ -18,27 +27,37 @@ public class Producer {
         this.type = type;
     }
 
-    public String getAssocation() {
-        return assocation;
+    public String getAssociation() {
+        return association;
     }
 
-    public void setAssocation(String assocation) {
-        this.assocation = assocation;
+    public void setAssociation(String association) {
+        this.association = association;
     }
 
-    public Float getEnergy() {
-        return energy;
+    public double getKwh() {
+        return kwh;
     }
 
-    public void setEnergy(Float energy) {
-        this.energy = energy;
+    public void setKwh(double kwh) {
+        this.kwh = kwh;
     }
 
-    public Date getTime() {
-        return time;
+    public LocalDateTime getDatetime() {
+        return datetime;
     }
 
-    public void setTime(Date time) {
-        this.time = time;
+    public void setDatetime(LocalDateTime datetime) {
+        this.datetime = datetime;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "type='" + type + '\'' +
+                ", association='" + association + '\'' +
+                ", kwh=" + kwh +
+                ", datetime=" + datetime +
+                '}';
     }
 }

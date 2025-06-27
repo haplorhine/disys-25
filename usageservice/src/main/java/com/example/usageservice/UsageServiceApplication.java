@@ -22,6 +22,11 @@ public class UsageServiceApplication {
 		return new Queue("consumer_in", true);
 	}
 
+	@Bean
+	public Queue percentage_in() {
+		return new Queue("percentage_in", true);
+	}
+
 	public static void main(String[] args) {
 		SpringApplication.run(UsageServiceApplication.class, args);
 	}
