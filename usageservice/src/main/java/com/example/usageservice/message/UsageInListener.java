@@ -1,12 +1,13 @@
 package com.example.usageservice.message;
 
 import com.example.usageservice.data.HourlyUsage;
+import com.example.usageservice.data.Producer;
 import com.example.usageservice.repository.UsageRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.usageservice.data.Producer;
+
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -31,28 +32,51 @@ public class UsageInListener {
         System.out.println(messageProducer.toString());
         //rabbit.convertAndSend("echo_in", message);
 
-        messageProducer.setTime(new Timestamp(System.currentTimeMillis()));
-        Timestamp timestamp = new Timestamp(messageProducer.getTime().getTime());
-        HourlyUsage usage = usageRepository.findByDateAndHourNative(timestamp);
+        Timestamp timestamp = Timestamp.valueOf(messageProducer.getDatetime());
+        HourlyUsage usage =
+                usageRepository.findById(truncateToInstantHour(messageProducer.getDatetime())).orElse(null);
 
         if (usage == null) {
             usage = new HourlyUsage();
-            usage.setId(truncateToInstantHour(messageProducer.getTime()));
+            usage.setId(truncateToInstantHour(messageProducer.getDatetime()));
+            usage.setCommunityUsed(Double.valueOf(0));
+            usage.setCommunityProduced(Double.valueOf(0));
+            usage.setGridUsed(Double.valueOf(0));
         }
 
 
-        if (messageProducer.getAssocation().equals("PRODUCER")) {
+        System.out.println(usage.toString());
+        if (messageProducer.getType().equals("PRODUCER")) {
 
-            usage.setCommunityUsed(usage.getCommunityProduced() + messageProducer.getEnergy());
+            Double newProduced =usage.getCommunityProduced() + messageProducer.getKwh();
+            usage.setCommunityProduced(newProduced);
+            System.out.println("setze new Produced: " + newProduced);
+
+
+
+
         } else {
+
+            // ermitteln den offenen Anteil für GridUsed - ist noch ein Anteil Verfügbar
+            Double gridUsed = usage.getCommunityProduced() - usage.getCommunityUsed();
+
+
+            Double newCommunityUsed = usage.getCommunityUsed()  +
+                    Math.min(messageProducer.getKwh(),gridUsed);
+
+            Double newGridUsed = usage.getGridUsed() + messageProducer.getKwh() - gridUsed;
+            usage.setCommunityUsed(newCommunityUsed);
+            usage.setGridUsed(newGridUsed);
+            System.out.println("setze new CommunityUsed: " + newCommunityUsed);
+            System.out.println("setze new GridUsed: " + newGridUsed);
             
         }
-        usageRepository.save(usage);
+        usageRepository.saveAndFlush(usage);
 
     }
 
-    public static Instant truncateToInstantHour(Date input) {
-        LocalDateTime ldt = input.toInstant()
+    public static Instant truncateToInstantHour(LocalDateTime input) {
+        LocalDateTime ldt = input
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
                 .truncatedTo(ChronoUnit.HOURS);

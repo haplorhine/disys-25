@@ -1,7 +1,6 @@
 package com.example.usageservice.data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 public class Producer {
 

@@ -4,6 +4,7 @@ import com.example.usageservice.data.HourlyStats;
 import com.example.usageservice.data.Producer;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -16,7 +17,7 @@ public class UsageStorageService {
 
     public HourlyStats processMessage(Producer message) {
         // Stunde runden → z. B. 14:34 → 14:00
-        LocalDateTime hour = message.getDatetime().truncatedTo(ChronoUnit.HOURS);
+       LocalDateTime hour = LocalDateTime.now();//message.getTime().truncatedTo(ChronoUnit.HOURS);
 
         // Falls noch kein Eintrag: neuen Stats-Eintrag für diese Stunde anlegen
         storage.putIfAbsent(hour, new HourlyStats(hour));

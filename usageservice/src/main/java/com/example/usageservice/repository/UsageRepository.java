@@ -9,11 +9,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
-public interface UsageRepository extends JpaRepository<HourlyUsage, Time> {
+public interface UsageRepository extends JpaRepository<HourlyUsage, Instant> {
 
-    @Query(value = "SELECT * FROM hourly_usage e " +
+    @Query(value = "SELECT e.* FROM hourly_usage e " +
             "WHERE DATE(e.hour_time) = DATE(:ts) " +
             "AND EXTRACT(HOUR FROM e.hour_time) = EXTRACT(HOUR FROM CAST(:ts AS timestamp))", nativeQuery = true)
     HourlyUsage findByDateAndHourNative(@Param("ts") Timestamp ts);

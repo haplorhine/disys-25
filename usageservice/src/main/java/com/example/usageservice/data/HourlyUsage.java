@@ -55,4 +55,13 @@ public class HourlyUsage {
         this.gridUsed = gridUsed;
     }
 
+    @Override
+    public String toString() {
+        return "HourlyUsage{" +
+                "id=" + id +
+                ", communityProduced=" + communityProduced +
+                ", communityUsed=" + communityUsed +
+                ", gridUsed=" + gridUsed +
+                '}';
+    }
 }
