@@ -18,10 +18,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +29,7 @@ import java.util.Map;
  * Es werden je nach gewähltem Button die Daten mittels RestService ermittelt.
  *
  */
-public class HelloController {
+public class EnergyGuiController {
     @FXML
     public TextField name;
     public TextField systemPercentage;
