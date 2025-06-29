@@ -1,7 +1,11 @@
 package com.example.restapi;
 
+import com.example.entity.CurrentPercentage;
 import com.example.entity.Energy;
 import com.example.entity.EnergyPercentage;
+import com.example.entity.HourlyUsage;
+import com.example.repository.CurrentPercentageRepository;
+import com.example.repository.UsageRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,10 +21,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * REstController für die Ermittlung der Daten für die Anzeige
@@ -30,7 +35,9 @@ import java.util.Map;
 public class EnergyAPI {
 
     private Map<String, Energy> data;
-    private final RabbitTemplate rabbit;
+
+    private final CurrentPercentageRepository currentPercentageRepository;
+    private final UsageRepository usageRepository;
 
     /**
      * Initialisieren der Daten
@@ -40,8 +47,10 @@ public class EnergyAPI {
      * Values: Energy - hält die erzeugten Werte
      * Schon in Vorbereitung wird ober openWeatherData die Sonnenscheinzeit ermittelt um "realistische" daten zu haben
      */
-    public EnergyAPI(RabbitTemplate rabbit) {
-        this.rabbit = rabbit;
+    public EnergyAPI(CurrentPercentageRepository currentPercentageRepository,  UsageRepository usageRepository) {
+
+        this.currentPercentageRepository = currentPercentageRepository;
+        this.usageRepository = usageRepository;
         data = new LinkedHashMap<>();
         Map<String, Integer> archiveData = new HashMap<>();
 
@@ -107,7 +116,8 @@ public class EnergyAPI {
     @GetMapping("current")
     public EnergyPercentage getCurrent() {
 
-        return new EnergyPercentage(10.3, 4.4);
+        CurrentPercentage currentPercentage = currentPercentageRepository.findById(truncateToHour(LocalDateTime.now())).orElse(null);
+        return new EnergyPercentage(currentPercentage.getCommunityDepleted(), currentPercentage.getGridPortion());
 
     }
 
@@ -143,6 +153,13 @@ public class EnergyAPI {
         return getSubMapByKeyRange(data, start, end);
 
 
+    }
+
+    @GetMapping("getValidData")
+    public List<LocalDateTime> getValidData() {
+
+        List<HourlyUsage> usages = usageRepository.findAll();
+        return usages.stream().map(HourlyUsage::getHour).collect(Collectors.toList());
     }
 
     /**
@@ -193,9 +210,13 @@ public class EnergyAPI {
         return result;
     }
 
-    @GetMapping("/testmq")
-    public void sendProducer() {
-        System.out.println("Sending message...");
-        rabbit.convertAndSend("producer_in", "Hello World!");
+    public static LocalDateTime truncateToHour(LocalDateTime input) {
+
+        return input
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+                .truncatedTo(ChronoUnit.HOURS);
     }
+
+
 }

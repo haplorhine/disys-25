@@ -2,6 +2,7 @@ package org.example.gui;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -35,8 +36,8 @@ public class HelloController {
     public TextField name;
     public TextField systemPercentage;
     public TextField gridPortion;
-    public ComboBox<String> startTime;
-    public ComboBox<String> endTime;
+    public ComboBox<LocalDateTime> startTime;
+    public ComboBox<LocalDateTime> endTime;
     public TextField resultCommunityUsed;
     public TableColumn<Map.Entry<String, Energy>, Double> communityUsedColumn;
     public TableColumn<Map.Entry<String, Energy>, String> timeColumn;
@@ -81,22 +82,18 @@ public class HelloController {
      *
      * @return Liste von Strings mit den möglichen Stunden
      */
-    private List<String> getHours() {
-        List<String> timestamps = new ArrayList<>();
-        LocalDate startDate = LocalDate.now().minusDays(7);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-        for (int day = 0; day < 7; day++) {
-            LocalDate date = startDate.plusDays(day);
-            for (int hour = 0; hour < 24; hour++) {
-                LocalDateTime dateTime = date.atTime(hour, 0);
-                timestamps.add(dateTime.format(formatter));
-            }
+    private List<LocalDateTime> getHours() {
+        try {
+        String response = getResponse("energy/getValidData");
+        ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            // Ausgabe zur Kontrolle
+        return mapper.readValue(response,  new TypeReference<List<LocalDateTime>>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+            welcomeText.setText("ERROR: " + e.getLocalizedMessage());
         }
-
-        // Ausgabe zur Kontrolle
-        return timestamps;
-
+        return null;
     }
 
     /**
@@ -108,8 +105,9 @@ public class HelloController {
      */
     @FXML
     private void initialize() {
-        startTime.setItems(FXCollections.observableArrayList(getHours()));
-        endTime.setItems(FXCollections.observableArrayList(getHours()));
+        ObservableList<LocalDateTime> dataList = FXCollections.observableArrayList(getHours());
+        startTime.setItems(dataList);
+        endTime.setItems(dataList);
 
         timeColumn.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
                 () -> cellData.getValue().getKey()));
@@ -142,16 +140,18 @@ public class HelloController {
     private void onShowData(ActionEvent actionEvent) {
 
         welcomeText.setText("");
-        if (startTime.getValue() == null || startTime.getValue().isEmpty() || endTime.getValue() == null|| endTime.getValue().isEmpty()) {
+        if (startTime.getValue() == null  || endTime.getValue() == null) {
             welcomeText.setText("Start- und oder Endzeit nicht gesetzt");
             return;
         }
 
         try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
             String response = getResponse("energy/history?start=" +
-                    URLEncoder.encode(startTime.getValue(), StandardCharsets.UTF_8) +
-                    "&ende=" + URLEncoder.encode(endTime.getValue(), StandardCharsets.UTF_8));
+                    URLEncoder.encode(startTime.getValue().format(formatter), StandardCharsets.UTF_8) +
+                    "&ende=" + URLEncoder.encode(endTime.getValue().format(formatter), StandardCharsets.UTF_8));
             ObjectMapper mapper = new ObjectMapper();
+
             Energy energy = mapper.readValue(response, Energy.class);
             resultCommunityProduced.setText(energy.getCommunityProduced().toString());
             resultCommunityUsed.setText(energy.getCommunityUsed().toString());
@@ -177,16 +177,17 @@ public class HelloController {
     @FXML
     private void onGetDetailData(ActionEvent actionEvent) {
         welcomeText.setText("");
-        if (startTime.getValue() == null || startTime.getValue().isEmpty() || endTime.getValue() == null|| endTime.getValue().isEmpty()) {
+        if (startTime.getValue() == null  || endTime.getValue() == null) {
 
             welcomeText.setText("Start- und oder Endzeit nicht gesetzt");
             return;
         }
 
         try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
             String response = getResponse("energy/detail?start=" +
-                    URLEncoder.encode(startTime.getValue(), StandardCharsets.UTF_8) +
-                    "&ende=" + URLEncoder.encode(endTime.getValue(), StandardCharsets.UTF_8));
+                    URLEncoder.encode(startTime.getValue().format(formatter), StandardCharsets.UTF_8) +
+                    "&ende=" + URLEncoder.encode(endTime.getValue().format(formatter), StandardCharsets.UTF_8));
 
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Energy> detailData = mapper.readValue(response, new TypeReference<LinkedHashMap<String, Energy>>() {
