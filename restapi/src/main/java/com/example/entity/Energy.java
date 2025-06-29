@@ -1,5 +1,7 @@
 package com.example.entity;
 
+import java.time.LocalDateTime;
+
 /**
  * Die Klasse hält die Werte für die erzeugte Energy der Community, wieviel die community wieder verbraucht hat und wieviel
  * and das Netz abgebeben wurde.
@@ -9,13 +11,13 @@ public class Energy {
     private Double communityUsed =0.;
     private Double gridUsed = 0.;
 
-    private String timeHour = "";
+    private LocalDateTime timeHour = LocalDateTime.now();
 
-    public String getTimeHour() {
+    public LocalDateTime getTimeHour() {
         return timeHour;
     }
 
-    public void setTimeHour(String timeHour) {
+    public void setTimeHour(LocalDateTime timeHour) {
         this.timeHour = timeHour;
     }
 
@@ -23,7 +25,7 @@ public class Energy {
 
     }
 
-    public Energy(Double communityProduced, Double communityUsed, Double gridUsed, String timeHour) {
+    public Energy(Double communityProduced, Double communityUsed, Double gridUsed, LocalDateTime timeHour) {
         this.communityProduced = communityProduced;
         this.communityUsed = communityUsed;
         this.gridUsed = gridUsed;
@@ -59,5 +61,11 @@ public class Energy {
         this.gridUsed +=addElem.getGridUsed();
         this.communityUsed += addElem.getCommunityUsed();
 
+    }
+
+    public void add(Double communityProduced, Double communityUsed, Double gridUsed) {
+        this.communityProduced += communityProduced;
+        this.gridUsed +=gridUsed;
+        this.communityUsed += communityUsed;
     }
 }

@@ -3,6 +3,7 @@ package org.example.gui;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,6 +13,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -37,12 +39,12 @@ public class EnergyGuiController {
     public ComboBox<LocalDateTime> startTime;
     public ComboBox<LocalDateTime> endTime;
     public TextField resultCommunityUsed;
-    public TableColumn<Map.Entry<String, Energy>, Double> communityUsedColumn;
-    public TableColumn<Map.Entry<String, Energy>, String> timeColumn;
-    public TableView<Map.Entry<String, Energy>> detailTableData;
+    public TableColumn<Energy,  Double> communityUsedColumn;
+    public TableColumn<Energy, String> timeColumn;
+    public TableView< Energy> detailTableData;
     public LineChart<String, Number> diagrammTableData;
-    public TableColumn<Map.Entry<String, Energy>, Double> communityProducedColumn;
-    public TableColumn<Map.Entry<String, Energy>, Double> gridUsedColumn;
+    public TableColumn<Energy, Double> communityProducedColumn;
+    public TableColumn<Energy, Double> gridUsedColumn;
     public TextField resultGridUsed;
     public TextField resultCommunityProduced;
 
@@ -65,6 +67,7 @@ public class EnergyGuiController {
         try {
             String response = getResponse("energy/current");
             ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
             EnergyPercentage ep = mapper.readValue(response, EnergyPercentage.class);
             systemPercentage.setText(ep.getCurrentCommunityPool().toString());
             gridPortion.setText(ep.getGridPorton().toString());
@@ -82,12 +85,23 @@ public class EnergyGuiController {
      */
     private List<LocalDateTime> getHours() {
         try {
-        String response = getResponse("energy/getValidData");
-        ObjectMapper mapper = new ObjectMapper();
+            String response = getResponse("energy/getValidData");
+            ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
             // Ausgabe zur Kontrolle
-        return mapper.readValue(response,  new TypeReference<List<LocalDateTime>>() {});
-        } catch (Exception e) {
+            return mapper.readValue(response, new TypeReference<List<LocalDateTime>>() {
+            });
+        } catch (ConnectException ce){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Fehler");
+            alert.setHeaderText(null); // kein Header
+            alert.setContentText("Leider ist der Server nicht erreichbar. Die Applikation wird beendet");
+            alert.showAndWait();
+
+            System.exit(1);
+
+    }
+        catch (Exception e) {
             e.printStackTrace();
             welcomeText.setText("ERROR: " + e.getLocalizedMessage());
         }
@@ -107,18 +121,22 @@ public class EnergyGuiController {
         startTime.setItems(dataList);
         endTime.setItems(dataList);
 
-        timeColumn.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createStringBinding(
-                () -> cellData.getValue().getKey()));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+        timeColumn.setCellValueFactory(cellData ->   new SimpleStringProperty(
+                        cellData.getValue().getTimeHour().format(formatter)
+                )
+        );
 
         communityProducedColumn.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(
-                () -> cellData.getValue().getValue().getCommunityProduced()));
+                () -> cellData.getValue().getCommunityProduced()));
         // Spalte
         communityUsedColumn.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(
-                () -> cellData.getValue().getValue().getCommunityUsed()));
+                () -> cellData.getValue().getCommunityUsed()));
 
         // Spalte
         gridUsedColumn.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(
-                () -> cellData.getValue().getValue().getGridUsed()));
+                () -> cellData.getValue().getGridUsed()));
 
     }
 
@@ -149,7 +167,8 @@ public class EnergyGuiController {
                     URLEncoder.encode(startTime.getValue().format(formatter), StandardCharsets.UTF_8) +
                     "&ende=" + URLEncoder.encode(endTime.getValue().format(formatter), StandardCharsets.UTF_8));
             ObjectMapper mapper = new ObjectMapper();
-
+            mapper.registerModule(new JavaTimeModule());
+            // Ausgabe zur Kontrolle
             Energy energy = mapper.readValue(response, Energy.class);
             resultCommunityProduced.setText(energy.getCommunityProduced().toString());
             resultCommunityUsed.setText(energy.getCommunityUsed().toString());
@@ -188,11 +207,15 @@ public class EnergyGuiController {
                     "&ende=" + URLEncoder.encode(endTime.getValue().format(formatter), StandardCharsets.UTF_8));
 
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, Energy> detailData = mapper.readValue(response, new TypeReference<LinkedHashMap<String, Energy>>() {
+            mapper.registerModule(new JavaTimeModule());
+            // Ausgabe zur Kontrolle
+            List<Energy> detailData = mapper.readValue(response, new TypeReference<List<Energy>>() {
             });
 
-            ObservableList<Map.Entry<String, Energy>> tableData =
-                    FXCollections.observableArrayList(detailData.entrySet());
+
+
+            ObservableList<Energy> tableData =
+                    FXCollections.observableArrayList(detailData);
             detailTableData.setItems(tableData);
 
             diagrammTableData.getData().removeAll(total, community, grid);
@@ -200,11 +223,12 @@ public class EnergyGuiController {
             total = new XYChart.Series<>();
             community = new XYChart.Series<>();
             grid = new XYChart.Series<>();
+            DateTimeFormatter tableFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-            detailData.forEach((key, value) -> {
-                total.getData().add(new XYChart.Data<>(key, value.getCommunityProduced()));
-                community.getData().add(new XYChart.Data<>(key, value.getCommunityUsed()));
-                grid.getData().add(new XYChart.Data<>(key, value.getGridUsed()));
+            detailData.forEach(( value) -> {
+                total.getData().add(new XYChart.Data<>(value.getTimeHour().format(tableFormatter), value.getCommunityProduced()));
+                community.getData().add(new XYChart.Data<>(value.getTimeHour().format(tableFormatter), value.getCommunityUsed()));
+                grid.getData().add(new XYChart.Data<>(value.getTimeHour().format(tableFormatter), value.getGridUsed()));
 
             });
 
@@ -233,7 +257,13 @@ public class EnergyGuiController {
         var request = HttpRequest.newBuilder().uri(URI.create(urlString)).GET().build();
         var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-        System.out.println("Status-Code " + response.statusCode());
-        return response.body();
+
+        if (response.statusCode() == 200) {
+            return response.body();
+        } else if (response.statusCode() == 404) {
+            throw new RuntimeException("Keine Daten vorhanden");
+        } else {
+            throw new RuntimeException("Fehler beim Abrufen: HTTP " + response.statusCode());
+        }
     }
 }

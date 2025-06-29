@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 @Entity
 public class HourlyUsage {
     @Id
-    private LocalDateTime hour_time;
+    @Column(name="hour_time")
+    private LocalDateTime hourTime;
 
     @Column(name="community_produced")
     private double communityProduced;
@@ -23,7 +24,7 @@ public class HourlyUsage {
 
     }
     public HourlyUsage(LocalDateTime hour) {
-        this.hour_time = hour;
+        this.hourTime = hour;
     }
 
     public void addProduced(double kwh) {
@@ -39,8 +40,8 @@ public class HourlyUsage {
         gridUsed += usedFromGrid;
     }
 
-    public LocalDateTime getHour() {
-        return hour_time;
+    public LocalDateTime getHourTime() {
+        return hourTime;
     }
 
     public double getCommunityProduced() {
@@ -56,7 +57,7 @@ public class HourlyUsage {
     }
 
     public void setHour_time(LocalDateTime hour_time) {
-        this.hour_time = hour_time;
+        this.hourTime = hour_time;
     }
 
     public void setCommunityProduced(double communityProduced) {
@@ -74,7 +75,7 @@ public class HourlyUsage {
     @Override
     public String toString() {
         return String.format("Hour: %s | Produced: %.3f | Used: %.3f | Grid: %.3f",
-                hour_time, communityProduced, communityUsed, gridUsed);
+                hourTime, communityProduced, communityUsed, gridUsed);
     }
 }
 

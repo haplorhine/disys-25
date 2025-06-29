@@ -1,22 +1,31 @@
 package org.example.gui;
 
-public class Energy {
-    private Double communityProduced;
-    private Double communityUsed;
+import java.time.LocalDateTime;
 
-    private Double gridUsed;
+public class Energy {
+    private Double communityProduced =0.;
+    private Double communityUsed =0.;
+    private Double gridUsed = 0.;
+
+    private LocalDateTime timeHour = LocalDateTime.now();
+
+    public LocalDateTime getTimeHour() {
+        return timeHour;
+    }
+
+    public void setTimeHour(LocalDateTime timeHour) {
+        this.timeHour = timeHour;
+    }
 
     public Energy() {
-        communityProduced= (double) 0;
-        communityUsed= (double) 0;
-        gridUsed= (double) 0;
 
     }
 
-    public Energy(Double communityProduced, Double communityUsed, Double gridUsed) {
+    public Energy(Double communityProduced, Double communityUsed, Double gridUsed, LocalDateTime timeHour) {
         this.communityProduced = communityProduced;
         this.communityUsed = communityUsed;
         this.gridUsed = gridUsed;
+        this.timeHour = timeHour;
     }
 
     public Double getCommunityProduced() {
@@ -43,7 +52,5 @@ public class Energy {
         this.gridUsed = gridUsed;
     }
 
-    public void add(Energy addElem) {
 
-    }
 }
