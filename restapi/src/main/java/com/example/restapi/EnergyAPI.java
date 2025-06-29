@@ -119,6 +119,12 @@ public class EnergyAPI {
 
     }
 
+    /**
+     * Ermitteln der vorhandenen Zeitpunkte um diese in der GUI auswählen zu können.
+     *
+
+     * @return List<LocalDateDateTime> - Liste der vorhandenen Uhrzeiten aufsteigend sortiert
+     */
     @GetMapping("getValidData")
     public List<LocalDateTime> getValidData() {
 
