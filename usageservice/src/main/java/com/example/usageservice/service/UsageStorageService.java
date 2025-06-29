@@ -1,27 +1,25 @@
 package com.example.usageservice.service;
 
-import com.example.usageservice.data.HourlyStats;
+import com.example.usageservice.data.HourlyUsage;
 import com.example.usageservice.data.Producer;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UsageStorageService {
 
-    private final Map<LocalDateTime, HourlyStats> storage = new ConcurrentHashMap<>();
+    private final Map<LocalDateTime, HourlyUsage> storage = new ConcurrentHashMap<>();
 
-    public HourlyStats processMessage(Producer message) {
+    public HourlyUsage processMessage(Producer message) {
         // Stunde runden → z. B. 14:34 → 14:00
        LocalDateTime hour = LocalDateTime.now();//message.getTime().truncatedTo(ChronoUnit.HOURS);
 
         // Falls noch kein Eintrag: neuen Stats-Eintrag für diese Stunde anlegen
-        storage.putIfAbsent(hour, new HourlyStats(hour));
-        HourlyStats stats = storage.get(hour);
+        storage.putIfAbsent(hour, new HourlyUsage(hour));
+        HourlyUsage stats = storage.get(hour);
 
         // Nachrichtstyp auswerten
         if ("PRODUCER".equalsIgnoreCase(message.getType())) {
@@ -34,12 +32,12 @@ public class UsageStorageService {
         return stats;
     }
 
-    public HourlyStats getStatsForHour(LocalDateTime hour) {
+    public HourlyUsage getStatsForHour(LocalDateTime hour) {
         return storage.get(hour);
     }
 
     // Optional für Debug
-    public Map<LocalDateTime, HourlyStats> getAllStats() {
+    public Map<LocalDateTime, HourlyUsage> getAllStats() {
         return storage;
     }
 }

@@ -14,16 +14,6 @@ import java.util.HashMap;
 @EnableScheduling
 public class RestapiApplication {
 
-	@Bean
-	public Queue producer_in() {
-		return new Queue("producer_in", true);
-	}
-
-	@Bean
-	public Queue consumer_in() {
-		return new Queue("consumer_in", true);
-	}
-
 
 	public static void main(String[] args) {
 		SpringApplication.run(RestapiApplication.class, args);

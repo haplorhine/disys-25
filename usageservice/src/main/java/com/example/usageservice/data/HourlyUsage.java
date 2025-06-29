@@ -3,65 +3,78 @@ package com.example.usageservice.data;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "hourly_usage")
 public class HourlyUsage {
     @Id
-    @Column(name = "hour_time", nullable = false)
-    private Instant id;
+    private LocalDateTime hour_time;
 
-    @Column(name = "community_produced")
-    private Double communityProduced;
+    @Column(name="community_produced")
+    private double communityProduced;
 
-    @Column(name = "community_used")
-    private Double communityUsed;
+    @Column(name="community_used")
+    private double communityUsed;
+    @Column(name="grid_used")
+    private double gridUsed;
 
-    @Column(name = "grid_used")
-    private Double gridUsed;
+    public HourlyUsage() {
 
-    public Instant getId() {
-        return id;
+    }
+    public HourlyUsage(LocalDateTime hour) {
+        this.hour_time = hour;
     }
 
-    public void setId(Instant id) {
-        this.id = id;
+    public void addProduced(double kwh) {
+        communityProduced += kwh;
     }
 
-    public Double getCommunityProduced() {
+    public void addUsed(double kwh) {
+        double restFromCommunity = Math.max(communityProduced - communityUsed, 0);
+        double usedFromCommunity = Math.min(kwh, restFromCommunity);
+        double usedFromGrid = kwh - usedFromCommunity;
+
+        communityUsed += usedFromCommunity;
+        gridUsed += usedFromGrid;
+    }
+
+    public LocalDateTime getHour() {
+        return hour_time;
+    }
+
+    public double getCommunityProduced() {
         return communityProduced;
     }
 
-    public void setCommunityProduced(Double communityProduced) {
-        this.communityProduced = communityProduced;
-    }
-
-    public Double getCommunityUsed() {
+    public double getCommunityUsed() {
         return communityUsed;
     }
 
-    public void setCommunityUsed(Double communityUsed) {
-        this.communityUsed = communityUsed;
-    }
-
-    public Double getGridUsed() {
+    public double getGridUsed() {
         return gridUsed;
     }
 
-    public void setGridUsed(Double gridUsed) {
+    public void setHour_time(LocalDateTime hour_time) {
+        this.hour_time = hour_time;
+    }
+
+    public void setCommunityProduced(double communityProduced) {
+        this.communityProduced = communityProduced;
+    }
+
+    public void setCommunityUsed(double communityUsed) {
+        this.communityUsed = communityUsed;
+    }
+
+    public void setGridUsed(double gridUsed) {
         this.gridUsed = gridUsed;
     }
 
     @Override
     public String toString() {
-        return "HourlyUsage{" +
-                "id=" + id +
-                ", communityProduced=" + communityProduced +
-                ", communityUsed=" + communityUsed +
-                ", gridUsed=" + gridUsed +
-                '}';
+        return String.format("Hour: %s | Produced: %.3f | Used: %.3f | Grid: %.3f",
+                hour_time, communityProduced, communityUsed, gridUsed);
     }
 }
+

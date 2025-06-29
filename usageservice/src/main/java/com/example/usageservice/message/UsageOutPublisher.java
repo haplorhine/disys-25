@@ -1,6 +1,6 @@
 package com.example.usageservice.message;
 
-import com.example.usageservice.data.HourlyStats;
+import com.example.usageservice.data.HourlyUsage;
 import com.example.usageservice.data.PercentageMessage;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ public class UsageOutPublisher {
         this.rabbit = rabbit;
     }
 
-    public void publish(HourlyStats stats) {
+    public void publish(HourlyUsage stats) {
         double produced = stats.getCommunityProduced();
         double used = stats.getCommunityUsed();
         double grid = stats.getGridUsed();

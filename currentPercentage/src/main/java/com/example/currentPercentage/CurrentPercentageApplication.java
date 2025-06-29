@@ -29,18 +29,4 @@ public class CurrentPercentageApplication {
 		return new Jackson2JsonMessageConverter();
 	}
 
-	@Bean
-	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-		RabbitTemplate template = new RabbitTemplate(connectionFactory);
-		template.setMessageConverter(jsonMessageConverter());
-		return template;
-	}
-
-	@Bean
-	public ConnectionFactory connectionFactory() {
-		CachingConnectionFactory factory = new CachingConnectionFactory("localhost");
-		factory.setUsername("guest");
-		factory.setPassword("guest");
-		return factory;
-	}
 }
