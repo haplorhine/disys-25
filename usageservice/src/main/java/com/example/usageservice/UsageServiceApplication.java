@@ -10,9 +10,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-@SpringBootApplication
+@SpringBootApplication // macht aus der klasse eine spring boot app
 public class UsageServiceApplication {
 
+	// legt drei neue queues an
+	// true bedeutet: die warteschlange bleibt auch nach einem neustart von rabbitmq erhalten
 	@Bean
 	public Queue producer_in() {
 		return new Queue("producer_in", true);
@@ -21,7 +23,6 @@ public class UsageServiceApplication {
 	public Queue consumer_in() {
 		return new Queue("consumer_in", true);
 	}
-
 	@Bean
 	public Queue percentage_in() {
 		return new Queue("percentage_in", true);
@@ -30,10 +31,11 @@ public class UsageServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(UsageServiceApplication.class, args);
 	}
+
+	// wandelt java-objekte in json (z.B. Producer) um
 	@Bean
 	public MessageConverter jsonMessageConverter() {
 		return new Jackson2JsonMessageConverter();
 	}
-
 
 }

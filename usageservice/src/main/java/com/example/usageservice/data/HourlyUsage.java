@@ -6,16 +6,24 @@ import jakarta.persistence.Id;
 
 import java.time.LocalDateTime;
 
+// jpa-entity für stündliche energiewerte
+// kennzeichnet diese klasse als datenbanktabelle (wird von spring/jpa verwaltet)
+// beim speichern wird automatisch ein datensatz in der tabelle angelegt oder aktualisiert
 @Entity
 public class HourlyUsage {
+    // primärschlüssel: jede zeile steht für eine bestimmte stunde
     @Id
     private LocalDateTime hour_time;
 
+    // wie viel strom in dieser stunde produziert wurde
     @Column(name="community_produced")
     private double communityProduced;
 
+    // wie viel strom intern verbraucht wurde
     @Column(name="community_used")
     private double communityUsed;
+
+    // wie viel strom aus dem öffentlichen netz bezogen wurde
     @Column(name="grid_used")
     private double gridUsed;
 
@@ -30,6 +38,7 @@ public class HourlyUsage {
         communityProduced += kwh;
     }
 
+    // verteilt den verbrauch: zuerst aus community-speicher, rest aus netz
     public void addUsed(double kwh) {
         double restFromCommunity = Math.max(communityProduced - communityUsed, 0);
         double usedFromCommunity = Math.min(kwh, restFromCommunity);
