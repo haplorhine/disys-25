@@ -35,7 +35,7 @@ public class TimedMessenger {
         msg.setKwh(baseKwh);
         msg.setDatetime(now);
 
-        System.out.println("Sending consumer message → " + msg);
+        System.out.println("Sending consumer message" + msg);
         // schicke das objekt an die queue "usage_in"
         rabbit.convertAndSend("usage_in", msg);
     }
