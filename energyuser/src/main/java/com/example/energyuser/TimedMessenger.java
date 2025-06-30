@@ -9,22 +9,26 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Random;
 
+// diese klasse wird automatisch von spring erkannt und regelmäßig ausgeführt
 @Component
 public class TimedMessenger {
 
     private final RabbitTemplate rabbit;
     private final Random random = new Random();
 
+    // spring fügt das rabbittemplate automatisch ein (dependency injection)
+    // @autowired ist hier nicht nötig, weil es nur einen konstruktor gibt
     public TimedMessenger(RabbitTemplate rabbit) {
         this.rabbit = rabbit;
     }
 
-
+    // diese methode wird alle 2500 millisekunden (2,5 sekunden) automatisch aufgerufen
     @Scheduled(fixedRate = 2500)
     public void sendConsumer() {
         LocalDateTime now = LocalDateTime.now();
         double baseKwh = getBaseKwhForTime(now.toLocalTime());
 
+        // erstelle ein neues nachrichten-objekt
         Producer msg = new Producer();
         msg.setType("USER");
         msg.setAssociation("COMMUNITY");
@@ -32,9 +36,10 @@ public class TimedMessenger {
         msg.setDatetime(now);
 
         System.out.println("Sending consumer message → " + msg);
+        // schicke das objekt an die queue "usage_in"
         rabbit.convertAndSend("usage_in", msg);
     }
-
+    // berechne stromverbrauch je nach tageszeit (morgen, abend, nacht, tagsüber)
     private double getBaseKwhForTime(LocalTime time) {
         int hour = time.getHour();
 

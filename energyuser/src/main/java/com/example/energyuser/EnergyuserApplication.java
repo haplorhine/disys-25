@@ -11,8 +11,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication
-@EnableScheduling
+@SpringBootApplication // macht aus der klasse eine spring boot app
+@EnableScheduling      // erlaubt zeitgesteuerte methoden (z.b. mit @scheduled)
 
 public class EnergyuserApplication {
 
@@ -21,16 +21,22 @@ public class EnergyuserApplication {
 		SpringApplication.run(EnergyuserApplication.class, args);
 	}
 
+	// legt eine neue queue mit dem namen "usage_in" an
+	// true bedeutet: die warteschlange bleibt auch nach einem neustart von rabbitmq erhalten
 	@Bean
 	public Queue usage_in() {
 		return new Queue("usage_in", true);
 	}
 
+	// wandelt java-objekte in json (z.B. Producer) um
 	@Bean
 	public MessageConverter jsonMessageConverter() {
 		return new Jackson2JsonMessageConverter();
 	}
 
+	// w ird von spring bereitgestellt, um das arbeiten mit rabbitmq zu erleichtern
+	// stellt methoden bereit, um nachrichten an warteschlangen zu senden
+	// das bean wird von spring verwaltet und kann später per @autowired in anderen komponenten genutzt werden
 	@Bean
 	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
 		RabbitTemplate template = new RabbitTemplate(connectionFactory);
@@ -38,6 +44,7 @@ public class EnergyuserApplication {
 		return template;
 	}
 
+	// stellt die verbindung zu rabbitmq her
 	@Bean
 	public ConnectionFactory connectionFactory() {
 		CachingConnectionFactory factory = new CachingConnectionFactory("localhost");
