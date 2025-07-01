@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 
-@SpringBootApplication
-@EnableScheduling
+@SpringBootApplication // macht aus der klasse eine spring boot app
+@EnableScheduling // erlaubt zeitgesteuerte methoden (z.b. mit @scheduled)
 public class RestapiApplication {
 
-
+	// startpunkt der anwendung
 	public static void main(String[] args) {
 		SpringApplication.run(RestapiApplication.class, args);
 	}

@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * REstController für die Ermittlung der Daten für die Anzeige
- */
+// restcontroller: stellt daten per http bereit (z. b. im json-format für frontend oder andere systeme)
+// spring erkennt diese klasse als controller, der auf anfragen reagieren kann
+// @requestmapping("energy") legt die basis-url fest → alle methoden sind unter /energy erreichbar
 @RestController
 @RequestMapping("energy")
 public class EnergyAPI {
@@ -40,37 +40,25 @@ public class EnergyAPI {
     private final CurrentPercentageRepository currentPercentageRepository;
     private final UsageRepository usageRepository;
 
-    /**
-     * Initialisieren der Daten
-     * Derzeit noch alles im Speicher, wird danach von der Datenbank abgelöst
-     * Es wird eine LinkedHashMap mit den Zeiten erzeugt
-     * Key: Stunden
-     * Values: Energy - hält die erzeugten Werte
-     * Schon in Vorbereitung wird ober openWeatherData die Sonnenscheinzeit ermittelt um "realistische" daten zu haben
-     */
+    // konstruktor-injection: spring übergibt automatisch die benötigten repository-objekte
     public EnergyAPI(CurrentPercentageRepository currentPercentageRepository, UsageRepository usageRepository) {
-
         this.currentPercentageRepository = currentPercentageRepository;
         this.usageRepository = usageRepository;
-
-
     }
 
-
-
+    // rundet ein LocalDateTime-objekt auf volle stunden (z. b. 14:35 → 14:00)
     public static LocalDateTime truncateToHour(LocalDateTime input) {
-
         return input
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
                 .truncatedTo(ChronoUnit.HOURS);
     }
 
-    /**
-     * Ermitteln des aktuellen Erzeugungssstandes
-     *
-     * @return Energy-Percentage - Objekt mit den aktuellen Werten
-     */
+    // stellt den http-endpunkt GET /energy/current bereit
+    // liefert den aktuellen prozentwert für die community:
+    // - wie viel der erzeugten energie wurde verbraucht (communityDepleted)
+    // - wie viel des verbrauchs kam aus dem stromnetz (gridPortion)
+    // rückgabe: EnergyPercentage-objekt im json-format
     @GetMapping("current")
     public ResponseEntity<EnergyPercentage>  getCurrent() {
         LocalDateTime nowHour = truncateToHour(LocalDateTime.now());
@@ -80,58 +68,42 @@ public class EnergyAPI {
 
     }
 
-    /**
-     * Ermitteln der historischen Daten lt start- und Endedatum.
-     * Die Parameter werden als Parameter in der GetUrl übergeben.
-     * Die Daten des Ausschnittes werden summiert.
-     *
-     * @param start - startdatum
-     * @param end   - endatum
-     * @return Energy.class - Objekt mit den summierten WErten.
-     */
+    // liefert summierte energiewerte für einen bestimmten zeitraum
+    // start und ende werden per url-parameter übergeben (z. b. /energy/history?start=...&ende=...)
+    // die werte werden über alle stunden im zeitraum aufsummiert (produziert, verbraucht, netzbezug)
     @GetMapping("history")
     public Energy getHistory(@RequestParam(value = "start") LocalDateTime start, @RequestParam(value = "ende") LocalDateTime end) {
-
         Energy result = new Energy();
+        // spring data jpa erstellt die passende datenbankabfrage automatisch – basierend auf dem methodennamen
+        // z.B. findByHourTimeBetween(...) → entspricht SQL: SELECT ... WHERE hour_time BETWEEN ... AND ...
         List<HourlyUsage> hourlyUsages = usageRepository.findByHourTimeBetween(start, end);
         hourlyUsages.forEach(hourlyUsage ->
                 result.add(hourlyUsage.getCommunityProduced(), hourlyUsage.getCommunityUsed(), hourlyUsage.getGridUsed()));
         return result;
-
     }
 
-    /**
-     * Ermitteln aller historischen Daten in einem Zeitabschnitt
-     * Der Abschnitt wird wieder als Parameter in der Url agegeben.
-     * Die Daten werden als HashMap <Zeit, Energy> zurück geliefert.
-     *
-     * @param start - beginn des gewünschten Ausschnitts
-     * @param end   - Ende des gewünschten Ausschnitts
-     * @return HashMap mit den Einzeldaten
-     */
+    // stellt den http-endpunkt GET /energy/history bereit
+    // erwartet zwei url-parameter: start und ende (format z. b. 2025-06-30T14:00)
+    // → beispielaufruf: /energy/history?start=2025-06-30T10:00&ende=2025-06-30T15:00
+    // liefert detaillierte energiedaten pro stunde für einen bestimmten zeitraum
+    // rückgabe ist eine liste von Energy-objekten mit zeitstempel und werten je stunde
     @GetMapping("detail")
     public List<Energy> getDetailHistory(@RequestParam(value = "start") LocalDateTime start, @RequestParam(value = "ende") LocalDateTime end) {
-
+        // spring data jpa erstellt die passende datenbankabfrage automatisch – basierend auf dem methodennamen
+        // z.B. findByHourTimeBetween(...) → entspricht SQL: SELECT ... WHERE hour_time BETWEEN ... AND ...
         List<HourlyUsage> hourlyUsages = usageRepository.findByHourTimeBetween(start, end);
         return hourlyUsages.stream().map(hourlyUsage ->
                 new Energy(hourlyUsage.getCommunityProduced(), hourlyUsage.getCommunityUsed(), hourlyUsage.getGridUsed(), hourlyUsage.getHourTime())).collect(Collectors.toList());
-
-
     }
 
-    /**
-     * Ermitteln der vorhandenen Zeitpunkte um diese in der GUI auswählen zu können.
-     *
-
-     * @return List<LocalDateDateTime> - Liste der vorhandenen Uhrzeiten aufsteigend sortiert
-     */
+    // stellt den http-endpunkt GET /energy/getValidData bereit
+    // liefert eine liste aller zeitstempel (stunden), zu denen energiedaten gespeichert wurden
+    // rückgabe: liste mit stundenwerten im format LocalDateTime (z. B. 2025-06-30T14:00)
     @GetMapping("getValidData")
     public List<LocalDateTime> getValidData() {
-
+        // spring data jpa erstellt die passende datenbankabfrage automatisch – basierend auf dem methodennamen
+        // z.B. findByHourTimeBetween(...) → entspricht SQL: SELECT ... WHERE hour_time BETWEEN ... AND ...
         List<HourlyUsage> usages = usageRepository.findAllByOrderByHourTimeAsc();
         return usages.stream().map(HourlyUsage::getHourTime).collect(Collectors.toList());
     }
-
-
-
 }
