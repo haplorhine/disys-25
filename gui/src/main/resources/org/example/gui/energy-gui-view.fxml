@@ -17,6 +17,29 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<!--
+    FXML-Datei für die grafische Benutzeroberfläche (GUI) der Energiedatenanzeige.
+
+    Diese Datei wurde mit JavaFX Scene Builder erstellt oder bearbeitet.
+    → Scene Builder erlaubt es, die UI visuell per Drag & Drop zusammenzustellen.
+    → Der generierte XML-Code (FXML) wird von JavaFX automatisch eingelesen.
+
+    Verwendeter Controller: org.example.gui.EnergyGuiController
+    → Dieser Controller verarbeitet Benutzeraktionen und lädt Daten über REST-API-Aufrufe.
+
+    Übersicht wichtiger Komponenten (fx:id):
+    - systemPercentage: zeigt an, wie viel der Community-Energie verbraucht wurde (%)
+    - gridPortion: zeigt an, wie viel Strom aus dem öffentlichen Netz bezogen wurde (%)
+    - startTime / endTime: Auswahlfelder für den gewünschten Zeitraum
+    - resultCommunityUsed / resultCommunityProduced / resultGridUsed: Felder zur Anzeige summierter Werte
+    - detailTableData: Tabelle mit Einzelwerten pro Stunde (Zeit, Produktion, Verbrauch, Netz)
+    - diagrammTableData: Liniendiagramm zur Visualisierung der stündlichen Energiedaten
+    - welcomeText: optionaler Begrüßungstext oder Statusanzeige
+    - Buttons wie "getCurrentUsage", "show data", "Detaildaten" rufen Controller-Methoden auf
+
+    Die zugehörigen Methoden im Controller werden über onAction="#methodenname" verbunden.
+-->
+
 <VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.gui.EnergyGuiController">
     <stylesheets>
         <URL value="@application.css" />
