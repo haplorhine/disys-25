@@ -34,23 +34,5 @@ public class EnergyuserApplication {
 		return new Jackson2JsonMessageConverter();
 	}
 
-	// w ird von spring bereitgestellt, um das arbeiten mit rabbitmq zu erleichtern
-	// stellt methoden bereit, um nachrichten an warteschlangen zu senden
-	// das bean wird von spring verwaltet und kann später per @autowired in anderen komponenten genutzt werden
-	@Bean
-	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-		RabbitTemplate template = new RabbitTemplate(connectionFactory);
-		template.setMessageConverter(jsonMessageConverter());
-		return template;
-	}
-
-	// stellt die verbindung zu rabbitmq her
-	@Bean
-	public ConnectionFactory connectionFactory() {
-		CachingConnectionFactory factory = new CachingConnectionFactory("localhost");
-		factory.setUsername("guest");
-		factory.setPassword("guest");
-		return factory;
-	}
 
 }
