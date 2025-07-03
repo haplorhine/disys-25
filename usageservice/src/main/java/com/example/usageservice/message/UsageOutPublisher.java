@@ -35,7 +35,7 @@ public class UsageOutPublisher {
         if (used == 0.0) {
             gridPortion = 0.0;
         } else {
-            gridPortion = (grid / used) * 100.0;
+            gridPortion = (grid / (grid + used)) * 100.0;
         }
 
         // nachricht erzeugen und mit gerundeten werten füllen
