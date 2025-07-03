@@ -13,6 +13,7 @@ public interface UsageRepository extends JpaRepository<HourlyUsage, LocalDateTim
     // spring data jpa erstellt die passende datenbankabfrage automatisch – basierend auf dem methodennamen
     // z.B. findByHourTimeBetween(...) → entspricht SQL: SELECT ... WHERE hour_time BETWEEN ... AND ...
     List<HourlyUsage> findByHourTimeBetween(LocalDateTime start, LocalDateTime end);
+    List<HourlyUsage> findByHourTimeBetweenOrderByHourTimeDesc(LocalDateTime start, LocalDateTime end);
     // - findAllByOrderByHourTimeAsc(): gibt alle einträge aufsteigend nach stunde sortiert zurück
     // spring data jpa erstellt die passende datenbankabfrage automatisch – basierend auf dem methodennamen
     // z.B. findByHourTimeBetween(...) → entspricht SQL: SELECT ... WHERE hour_time BETWEEN ... AND ...

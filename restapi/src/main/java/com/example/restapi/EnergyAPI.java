@@ -1,33 +1,20 @@
 package com.example.restapi;
 
-import com.example.entity.CurrentPercentage;
 import com.example.entity.Energy;
 import com.example.entity.EnergyPercentage;
 import com.example.entity.HourlyUsage;
 import com.example.repository.CurrentPercentageRepository;
 import com.example.repository.UsageRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 // restcontroller: stellt daten per http bereit (z. b. im json-format für frontend oder andere systeme)
@@ -91,7 +78,7 @@ public class EnergyAPI {
     public List<Energy> getDetailHistory(@RequestParam(value = "start") LocalDateTime start, @RequestParam(value = "ende") LocalDateTime end) {
         // spring data jpa erstellt die passende datenbankabfrage automatisch – basierend auf dem methodennamen
         // z.B. findByHourTimeBetween(...) → entspricht SQL: SELECT ... WHERE hour_time BETWEEN ... AND ...
-        List<HourlyUsage> hourlyUsages = usageRepository.findByHourTimeBetween(start, end);
+        List<HourlyUsage> hourlyUsages = usageRepository.findByHourTimeBetweenOrderByHourTimeDesc(start, end);
         return hourlyUsages.stream().map(hourlyUsage ->
                 new Energy(hourlyUsage.getCommunityProduced(), hourlyUsage.getCommunityUsed(), hourlyUsage.getGridUsed(), hourlyUsage.getHourTime())).collect(Collectors.toList());
     }
